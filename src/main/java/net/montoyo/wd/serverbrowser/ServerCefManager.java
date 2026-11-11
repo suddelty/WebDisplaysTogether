@@ -191,6 +191,34 @@ public final class ServerCefManager {
             return;
 
         client.addRequestHandler(new org.cef.handler.CefRequestHandlerAdapter() {
+            /**
+             * Enforces the URL blacklist/whitelist before a screen's main frame
+             * navigates (link clicks, JS navigation, server redirects), so a
+             * blocked page never starts loading. onAddressChange still acts as
+             * a fallback for anything that slips past this.
+             */
+            @Override
+            public boolean onBeforeBrowse(org.cef.browser.CefBrowser browser, org.cef.browser.CefFrame frame,
+                                          org.cef.network.CefRequest request, boolean userGesture, boolean isRedirect) {
+                if (frame == null || !frame.isMain() || request == null)
+                    return false;
+
+                StreamedScreen ss = ServerBrowserManager.findByBrowser(browser);
+                if (ss == null)
+                    return false; // not a screen browser (e.g. a minePad on the shared client)
+
+                String url = request.getURL();
+                String block = WebDisplays.getBlockPage(url);
+                if (block == null || block.equals(url))
+                    return false;
+
+                Log.info("Blocked screen navigation to %s", url);
+                net.minecraft.server.MinecraftServer server = WebDisplays.PROXY.getServer();
+                if (server != null)
+                    server.execute(() -> ss.loadUrl(block));
+                return true; // cancel this navigation
+            }
+
             @Override
             public void onRenderProcessTerminated(org.cef.browser.CefBrowser browser,
                                                   org.cef.handler.CefRequestHandler.TerminationStatus status) {

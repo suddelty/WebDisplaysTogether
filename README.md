@@ -82,9 +82,31 @@ Two files under `config/`:
 
 - `webdisplaystogether-common.toml` — screen size and resolution caps, stream
   fps/bitrate/height, concurrent browser limit, idle timeout, incognito, URL
-  blacklist, home page, extra Chromium switches, miniserv port and quota.
+  blacklist and whitelist, home page, extra Chromium switches, miniserv port
+  and quota.
 - `webdisplaystogether-client.toml` — render distance, MinePad resolution,
   music ducking, keyboard camera, laser pointer button swap.
+
+### URL whitelist
+
+Set `whitelist` under `[browser_options]` to a comma-separated list of domains
+to only let screens load those sites:
+
+```toml
+[browser_options]
+    whitelist = "youtube.com,bilibili.com,example.org"
+```
+
+- Each entry also allows its subdomains (`youtube.com` covers `www.youtube.com`
+  and `m.youtube.com`). `*.example.com` and full URLs are accepted too.
+- Empty (the default) disables the whitelist and allows every site.
+- The mod's own pages (`mod://`, uploaded miniserv files) are always allowed;
+  `data:`, `file:` and other non-http(s) URLs are blocked while it is active.
+- Checked when a URL is set and on every navigation of a screen, including
+  clicked links and redirects; blocked pages show a "Not whitelisted" page.
+- The blacklist still applies on top of the whitelist.
+- Screens are rendered on the server, so the server's config is what counts for
+  them. MinePads browse on the client and follow the client's own config.
 
 ## Credits and license
 

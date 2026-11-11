@@ -144,6 +144,7 @@
   "config.webdisplaystogether.hard_recipes": "困难升级配方",
   "config.webdisplaystogether.disable_thief": "禁用所有权给予器",
   "config.webdisplaystogether.blacklist": "网址黑名单",
+  "config.webdisplaystogether.whitelist": "网址白名单",
   "config.webdisplaystogether.home_page": "主页",
   "config.webdisplaystogether.max_res_x": "浏览器最大水平分辨率",
   "config.webdisplaystogether.max_res_y": "浏览器最大垂直分辨率",

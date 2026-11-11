@@ -35,10 +35,18 @@ public class CommonConfig {
 	@CFGSegment("browser_options")
 	public static class Browser {
 		@Name("blacklist")
-		@Comment("The page which screens should open up to when turning on")
+		@Comment("Comma-separated list of domain names that screens and minePads must not load")
 		@Translation("config.webdisplaystogether.blacklist")
 		@Default(valueStr = "")
 		public static String[] blacklist = new String[0];
+
+		@Name("whitelist")
+		@Comment({"Comma-separated list of domain names screens and minePads are allowed to load, e.g. \"youtube.com,bilibili.com\".",
+				"An entry also allows all of its subdomains (youtube.com allows www.youtube.com and m.youtube.com).",
+				"Leave empty to allow every site (default). The mod's own pages are always allowed; the blacklist still applies on top."})
+		@Translation("config.webdisplaystogether.whitelist")
+		@Default(valueStr = "")
+		public static String[] whitelist = new String[0];
 		
 		@Name("home_page")
 		@Comment("The page which screens should open up to when turning on")

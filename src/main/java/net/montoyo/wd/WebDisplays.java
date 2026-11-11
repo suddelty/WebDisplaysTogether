@@ -69,6 +69,7 @@ public class WebDisplays {
     
     public static final ResourceLocation ADV_PAD_BREAK = new ResourceLocation("webdisplaystogether", "pad_break");
     public static final String BLACKLIST_URL = "mod://webdisplaystogether/blacklisted.html";
+    public static final String WHITELIST_URL = "mod://webdisplaystogether/notwhitelisted.html";
     public static final Gson GSON = new Gson();
     public static final ResourceLocation CAPABILITY = new ResourceLocation("webdisplaystogether", "customdatacap");
 
@@ -525,8 +526,109 @@ public class WebDisplays {
         }
     }
 
+    /** True if the URL whitelist is enabled (at least one non-blank entry). */
+    public static boolean isWhitelistEnabled() {
+        String[] wl = CommonConfig.Browser.whitelist;
+        if (wl == null)
+            return false;
+        for (String str : wl)
+            if (!normalizeWhitelistEntry(str).isEmpty())
+                return true;
+        return false;
+    }
+
+    /**
+     * Whether the URL passes the whitelist. Always true when the whitelist is
+     * empty. The mod's own pages (mod://, miniserv webdisplaystogether://) and
+     * about:blank are always allowed. Otherwise only http(s) URLs whose host
+     * equals a whitelist entry, or is a subdomain of one, are allowed.
+     */
+    public static boolean isSiteWhitelisted(String url) {
+        if (!isWhitelistEnabled())
+            return true;
+        if (url == null || url.isBlank())
+            return true; // nothing to load
+
+        if (url.trim().equalsIgnoreCase("about:blank"))
+            return true;
+
+        String full = Util.addProtocol(url.trim());
+        String lower = full.toLowerCase(java.util.Locale.ROOT);
+        if (lower.startsWith("mod://") || lower.startsWith("webdisplaystogether://"))
+            return true;
+        if (!lower.startsWith("http://") && !lower.startsWith("https://"))
+            return false; // data:, file:, blob:, javascript:, chrome:// ... could bypass the whitelist
+
+        String host;
+        try {
+            host = new java.net.URI(full).getHost();
+        } catch (java.net.URISyntaxException ex) {
+            try {
+                host = new URL(full).getHost(); // more lenient than URI
+            } catch (MalformedURLException ex2) {
+                return false;
+            }
+        }
+        if (host == null || host.isEmpty())
+            return false;
+
+        host = host.toLowerCase(java.util.Locale.ROOT);
+        if (host.endsWith("."))
+            host = host.substring(0, host.length() - 1);
+
+        for (String str : CommonConfig.Browser.whitelist) {
+            String entry = normalizeWhitelistEntry(str);
+            if (!entry.isEmpty() && (host.equals(entry) || host.endsWith("." + entry)))
+                return true;
+        }
+        return false;
+    }
+
+    /** Accepts "example.com", "*.example.com", ".example.com" or a full URL like "https://example.com/path". */
+    private static String normalizeWhitelistEntry(String str) {
+        if (str == null)
+            return "";
+        String e = str.trim().toLowerCase(java.util.Locale.ROOT);
+        int scheme = e.indexOf("://");
+        if (scheme >= 0)
+            e = e.substring(scheme + 3);
+        int slash = e.indexOf('/');
+        if (slash >= 0)
+            e = e.substring(0, slash);
+        int at = e.lastIndexOf('@');
+        if (at >= 0)
+            e = e.substring(at + 1);
+        if (!e.startsWith("[")) { // strip a port, but leave IPv6 literals alone
+            int colon = e.lastIndexOf(':');
+            if (colon >= 0)
+                e = e.substring(0, colon);
+        }
+        if (e.startsWith("*."))
+            e = e.substring(2);
+        while (e.startsWith("."))
+            e = e.substring(1);
+        while (e.endsWith("."))
+            e = e.substring(0, e.length() - 1);
+        return e;
+    }
+
+    /** True if the URL must not be loaded (blacklisted, or not on an active whitelist). */
+    public static boolean isSiteBlocked(String url) {
+        return getBlockPage(url) != null;
+    }
+
+    /** The page to show instead of {@code url}, or null if the URL may be loaded. */
+    public static String getBlockPage(String url) {
+        if (isSiteBlacklisted(url))
+            return BLACKLIST_URL;
+        if (!isSiteWhitelisted(url))
+            return WHITELIST_URL;
+        return null;
+    }
+
     public static String applyBlacklist(String url) {
-        return isSiteBlacklisted(url) ? BLACKLIST_URL : url;
+        String block = getBlockPage(url);
+        return block != null ? block : url;
     }
 
     // ------------------------------------------------------------------

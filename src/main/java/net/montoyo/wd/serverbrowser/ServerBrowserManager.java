@@ -227,7 +227,7 @@ public final class ServerBrowserManager {
      * Called (from any thread) when a server-side browser navigates to a new URL,
      * e.g. because a viewer clicked a link. Mirrors the old client-side
      * updateClientSideURL behavior: keeps ScreenData.url in sync and enforces
-     * the blacklist.
+     * the blacklist/whitelist.
      */
     public static void onBrowserAddressChange(CefBrowser browser, String url) {
         for (StreamedScreen ss : screens.values()) {
@@ -254,8 +254,9 @@ public final class ServerBrowserManager {
         if (scr == null || url.equals(scr.url))
             return;
 
-        if (WebDisplays.isSiteBlacklisted(url)) {
-            ss.loadUrl(WebDisplays.BLACKLIST_URL);
+        String block = WebDisplays.getBlockPage(url);
+        if (block != null) {
+            ss.loadUrl(block);
             return;
         }
 

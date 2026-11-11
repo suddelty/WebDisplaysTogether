@@ -18,6 +18,22 @@ normalising to a single scheme (e.g. `1.0.6`) before publishing.
 
 ---
 
+## 1.09
+
+**Added**
+
+- **URL whitelist.** New `whitelist` option under `[browser_options]` in
+  `webdisplaystogether-common.toml`: a comma-separated list of domains screens
+  and minePads may load (e.g. `"youtube.com,bilibili.com"`). Each entry also
+  allows its subdomains. Empty (the default) allows every site. While it is
+  active, non-http(s) URLs such as `data:` and `file:` are blocked; the mod's
+  own pages are always allowed. Blocked sites show a "Not whitelisted" page.
+- Screen browsers now check the blacklist/whitelist **before** each main-frame
+  navigation (links, script navigation, redirects), so a blocked page never
+  starts loading.
+
+---
+
 ## 1.08
 
 **Removed**
@@ -185,6 +201,20 @@ miniserv file host, and incognito-by-default browsing.
 Forge 1.20.1 线用的是 `1.0、1.01、1.02、1.03、1.04、1.05、1.06`；1.21.1 线首发叫
 `1.0.3`，之后跟上了同样的编号（`1.05`、`1.06`）。`1.0.3` 和 `1.03` 是同一个版本。
 建议上传前统一成一种写法（比如 `1.0.6`）。
+
+---
+
+## 1.09
+
+**新增**
+
+- **网址白名单。** `webdisplaystogether-common.toml` 的 `[browser_options]` 中新增
+  `whitelist` 选项：用逗号分隔的域名列表（例如 `"youtube.com,bilibili.com"`），
+  屏幕和 minePad 只能打开这些网站，每一项同时允许其子域名。留空（默认）则允许所有网站。
+  启用时会拦截 `data:`、`file:` 等非 http(s) 网址；模组自带页面始终允许。
+  被拦截的网站会显示“Not whitelisted”页面。
+- 服务端屏幕浏览器现在会在每次主框架跳转（点击链接、脚本跳转、重定向）**之前**检查黑名单/白名单，
+  被拦截的页面不会开始加载。
 
 ---
 

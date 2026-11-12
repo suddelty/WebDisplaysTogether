@@ -9,7 +9,7 @@ import net.montoyo.wd.net.server_bound.*;
 import java.util.ArrayList;
 
 public class WDNetworkRegistry {
-	public static final String networkingVersion = "4";
+	public static final String networkingVersion = "5";
 	public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
 			new ResourceLocation("webdisplaystogether", "packetsystem"),
 			() -> networkingVersion,

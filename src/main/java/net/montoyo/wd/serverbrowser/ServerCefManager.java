@@ -204,8 +204,8 @@ public final class ServerCefManager {
                     return false;
 
                 StreamedScreen ss = ServerBrowserManager.findByBrowser(browser);
-                if (ss == null)
-                    return false; // not a screen browser (e.g. a minePad on the shared client)
+                if (ss == null) // not a screen browser: let the proxy filter minePads
+                    return WebDisplays.PROXY.onBeforeBrowseOther(browser, request.getURL());
 
                 String url = request.getURL();
                 String block = WebDisplays.getBlockPage(url);

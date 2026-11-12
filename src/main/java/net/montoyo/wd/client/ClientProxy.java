@@ -287,6 +287,8 @@ public class ClientProxy extends SharedProxy implements ResourceManagerReloadLis
 		);
 
 		MCEF.getClient().addDisplayHandler(DisplayHandler.INSTANCE);
+		// Request handler that enforces the URL blacklist/whitelist (screens and minePads)
+		net.montoyo.wd.serverbrowser.ServerCefManager.installCrashRecovery(MCEF.getClient().getHandle());
 		MCEF.getClient().getHandle().addMessageRouter(CefMessageRouter.create(WDRouter.INSTANCE));
 
 		// Capture audio from integrated-server screen browsers and local-mode browsers
@@ -619,6 +621,12 @@ public class ClientProxy extends SharedProxy implements ResourceManagerReloadLis
 	}
 	
 	@SubscribeEvent
+	public void onClientLogOut(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut ev) {
+		// Back to the local config's URL lists once we leave the server
+		WebDisplays.setRemoteUrlLists(null, null);
+	}
+	
+	@SubscribeEvent
 	public void onPlaySound(net.minecraftforge.client.event.sound.PlaySoundEvent ev) {
 		// While a screen is audibly playing, keep Minecraft's background music
 		// from starting (the already-playing track is stopped by ScreenAudioManager)
@@ -798,6 +806,26 @@ public class ClientProxy extends SharedProxy implements ResourceManagerReloadLis
 	
 	public MinePadRenderer getMinePadRenderer() {
 		return minePadRenderer;
+	}
+	
+	/** Keeps minePads on the server's blacklist/whitelist (see ServerCefManager.installCrashRecovery). */
+	@Override
+	public boolean onBeforeBrowseOther(CefBrowser browser, String url) {
+		for (PadData pd : padList) {
+			if (pd.view == browser) {
+				String block = WebDisplays.getBlockPage(url);
+				if (block == null || block.equals(url))
+					return false;
+				
+				Log.info("Blocked minePad navigation to %s", url);
+				mc.execute(() -> {
+					if (pd.view != null)
+						pd.view.loadURL(block);
+				});
+				return true; // cancel this navigation
+			}
+		}
+		return false;
 	}
 	
 	public PadData getPadByID(UUID id) {

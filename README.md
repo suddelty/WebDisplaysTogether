@@ -105,8 +105,11 @@ to only let screens load those sites:
 - Checked when a URL is set and on every navigation of a screen, including
   clicked links and redirects; blocked pages show a "Not whitelisted" page.
 - The blacklist still applies on top of the whitelist.
-- Screens are rendered on the server, so the server's config is what counts for
-  them. MinePads browse on the client and follow the client's own config.
+- The server's config is what counts. Screens are rendered on the server;
+  MinePads browse on the client, but the server sends its blacklist and
+  whitelist when a player joins, the MinePad blocks navigation with them, and the
+  server rejects blocked URLs a MinePad reports. Outside of a server, MinePads
+  use the client's own config.
 
 ## Credits and license
 

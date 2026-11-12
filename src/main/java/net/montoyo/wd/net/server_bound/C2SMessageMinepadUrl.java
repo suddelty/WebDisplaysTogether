@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkEvent;
+import net.montoyo.wd.WebDisplays;
 import net.montoyo.wd.item.ItemMinePad2;
 import net.montoyo.wd.net.Packet;
 
@@ -31,6 +32,9 @@ public class C2SMessageMinepadUrl extends Packet {
 	}
 	
 	protected void merge(ItemStack stack) {
+		if (!url.equals(""))
+			url = WebDisplays.applyBlacklist(url); // enforce the server's blacklist/whitelist
+		
 		if (url.equals("")) {
 			stack.getOrCreateTag().remove("PadID");
 		} else {

@@ -47,6 +47,16 @@ public class SharedProxy {
     public void onCefInit() {
     }
 
+    /**
+     * Called before a main-frame navigation of a CEF browser that is not a
+     * server-side screen (e.g. a client-side minePad).
+     *
+     * @return true to cancel the navigation
+     */
+    public boolean onBeforeBrowseOther(org.cef.browser.CefBrowser browser, String url) {
+        return false;
+    }
+
     @Deprecated(forRemoval = true)
     public Level getWorld(ResourceKey<Level> dim) {
         return getServer().getLevel(dim);

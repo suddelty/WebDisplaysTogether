@@ -24,10 +24,12 @@ public class DisplayHandler implements CefDisplayHandler {
             long t = System.currentTimeMillis();
 
             for (ClientProxy.PadData pd : proxy.getPads()) {
-                if (pd.view == browser && t - pd.lastSent() >= 1000) {
-                    if (WebDisplays.isSiteBlacklisted(url))
-                        pd.view.loadURL(WebDisplays.BLACKLIST_URL);
-                    else {
+                if (pd.view == browser) {
+                    // Fallback for anything ClientProxy.onBeforeBrowse didn't catch
+                    String block = WebDisplays.getBlockPage(url);
+                    if (block != null && !block.equals(url))
+                        pd.view.loadURL(block);
+                    else if (t - pd.lastSent() >= 1000) {
                         pd.updateTime(); //Avoid spamming the server with porn URLs
                         WDNetworkRegistry.INSTANCE.sendToServer(new C2SMessageMinepadUrl(pd.id, url));
                     }

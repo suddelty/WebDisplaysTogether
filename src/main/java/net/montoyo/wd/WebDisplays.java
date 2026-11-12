@@ -342,7 +342,8 @@ public class WebDisplays {
                     () -> (ServerPlayer) ev.getEntity()
             );
 
-            S2CMessageServerInfo message = new S2CMessageServerInfo(miniservPort);
+            S2CMessageServerInfo message = new S2CMessageServerInfo(miniservPort,
+                    CommonConfig.Browser.blacklist, CommonConfig.Browser.whitelist);
 
             WDNetworkRegistry.INSTANCE.send(packetDistrutor, message);
 
@@ -515,10 +516,37 @@ public class WebDisplays {
   //      return INSTANCE.hasCC;
   //  }
 
+    // URL lists received from the server we are connected to (client side).
+    // null = not connected / not received yet; fall back to the local config.
+    private static volatile String[] remoteBlacklist;
+    private static volatile String[] remoteWhitelist;
+
+    /**
+     * Client side: use the server's blacklist/whitelist for client-side
+     * browsing (minePads) while connected to it. Pass nulls to go back to the
+     * local config (on disconnect).
+     */
+    public static void setRemoteUrlLists(String[] blacklist, String[] whitelist) {
+        remoteBlacklist = blacklist;
+        remoteWhitelist = whitelist;
+    }
+
+    /** The active blacklist: the server's while connected to one, else the local config. */
+    public static String[] getBlacklist() {
+        String[] r = remoteBlacklist;
+        return r != null ? r : CommonConfig.Browser.blacklist;
+    }
+
+    /** The active whitelist: the server's while connected to one, else the local config. */
+    public static String[] getWhitelist() {
+        String[] r = remoteWhitelist;
+        return r != null ? r : CommonConfig.Browser.whitelist;
+    }
+
     public static boolean isSiteBlacklisted(String url) {
         try {
             URL url2 = new URL(Util.addProtocol(url));
-            for (String str : CommonConfig.Browser.blacklist)
+            for (String str : getBlacklist())
                 if (str.equalsIgnoreCase(url2.getHost())) return true;
             return false;
         } catch(MalformedURLException ex) {
@@ -528,7 +556,7 @@ public class WebDisplays {
 
     /** True if the URL whitelist is enabled (at least one non-blank entry). */
     public static boolean isWhitelistEnabled() {
-        String[] wl = CommonConfig.Browser.whitelist;
+        String[] wl = getWhitelist();
         if (wl == null)
             return false;
         for (String str : wl)
@@ -576,7 +604,7 @@ public class WebDisplays {
         if (host.endsWith("."))
             host = host.substring(0, host.length() - 1);
 
-        for (String str : CommonConfig.Browser.whitelist) {
+        for (String str : getWhitelist()) {
             String entry = normalizeWhitelistEntry(str);
             if (!entry.isEmpty() && (host.equals(entry) || host.endsWith("." + entry)))
                 return true;
